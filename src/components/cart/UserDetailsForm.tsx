@@ -10,13 +10,26 @@ import { toast } from "@/components/ui/use-toast";
 import { User, Phone, Mail, MapPin, Globe } from "lucide-react";
 
 const formSchema = z.object({
-  firstName: z.string().min(2, "Le prénom doit contenir au moins 2 caractères"),
-  lastName: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  phone: z.string().min(10, "Numéro de téléphone invalide"),
-  email: z.string().email("Email invalide"),
-  address: z.string().min(5, "Adresse invalide"),
-  country: z.string().min(2, "Pays invalide"),
-  zipCode: z.string().min(5, "Code postal invalide"),
+  firstName: z.string()
+    .min(2, "Le prénom doit contenir au moins 2 caractères")
+    .regex(/^[a-zA-ZÀ-ÿ\s'-]+$/, "Le prénom ne doit contenir que des lettres"),
+  lastName: z.string()
+    .min(2, "Le nom doit contenir au moins 2 caractères")
+    .regex(/^[a-zA-ZÀ-ÿ\s'-]+$/, "Le nom ne doit contenir que des lettres"),
+  phone: z.string()
+    .min(10, "Numéro de téléphone invalide")
+    .regex(/^[0-9+\s()-]+$/, "Format de numéro invalide"),
+  email: z.string()
+    .email("Format d'email invalide")
+    .min(5, "Email invalide"),
+  address: z.string()
+    .min(5, "L'adresse doit contenir au moins 5 caractères"),
+  country: z.string()
+    .min(2, "Le pays doit contenir au moins 2 caractères")
+    .regex(/^[a-zA-ZÀ-ÿ\s'-]+$/, "Le pays ne doit contenir que des lettres"),
+  zipCode: z.string()
+    .min(5, "Code postal invalide")
+    .regex(/^[0-9]+$/, "Le code postal ne doit contenir que des chiffres"),
 });
 
 interface UserDetailsFormProps {
@@ -63,7 +76,18 @@ const UserDetailsForm = ({ onComplete, initialData }: UserDetailsFormProps) => {
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
+      // Validate current step fields before proceeding
+      const currentFields = steps[currentStep].fields;
+      const currentValues = Object.fromEntries(
+        Object.entries(values).filter(([key]) => currentFields.includes(key))
+      );
+      
+      try {
+        formSchema.parse(currentValues);
+        setCurrentStep(currentStep + 1);
+      } catch (error) {
+        return; // Don't proceed if current step validation fails
+      }
     } else {
       saveUserDetails(values as UserDetails);
       onComplete(values as UserDetails);
@@ -119,33 +143,140 @@ const UserDetailsForm = ({ onComplete, initialData }: UserDetailsFormProps) => {
               exit={{ opacity: 0, x: -20 }}
               className="space-y-4"
             >
-              {currentFields.map((fieldName) => (
-                <FormField
-                  key={fieldName}
-                  control={form.control}
-                  name={fieldName as keyof z.infer<typeof formSchema>}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-gray-700 font-medium">
-                        {fieldName === "firstName" && "Prénom"}
-                        {fieldName === "lastName" && "Nom"}
-                        {fieldName === "phone" && "Téléphone"}
-                        {fieldName === "email" && "Email"}
-                        {fieldName === "address" && "Adresse"}
-                        {fieldName === "country" && "Pays"}
-                        {fieldName === "zipCode" && "Code Postal"}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          className="border-gray-300 focus:border-[#700100] focus:ring-[#700100] bg-white"
-                        />
-                      </FormControl>
-                      <FormMessage className="text-red-500" />
-                    </FormItem>
-                  )}
-                />
-              ))}
+              {currentStep === 0 && (
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="firstName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-700 font-medium">Prénom</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            className="border-gray-300 focus:border-[#700100] focus:ring-[#700100] bg-white"
+                            placeholder="Entrez votre prénom"
+                          />
+                        </FormControl>
+                        <FormMessage className="text-red-500" />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="lastName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-700 font-medium">Nom</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            className="border-gray-300 focus:border-[#700100] focus:ring-[#700100] bg-white"
+                            placeholder="Entrez votre nom"
+                          />
+                        </FormControl>
+                        <FormMessage className="text-red-500" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
+
+              {currentStep === 1 && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-700 font-medium">Téléphone</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            className="border-gray-300 focus:border-[#700100] focus:ring-[#700100] bg-white"
+                            placeholder="Entrez votre numéro de téléphone"
+                          />
+                        </FormControl>
+                        <FormMessage className="text-red-500" />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-700 font-medium">Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="email"
+                            className="border-gray-300 focus:border-[#700100] focus:ring-[#700100] bg-white"
+                            placeholder="Entrez votre email"
+                          />
+                        </FormControl>
+                        <FormMessage className="text-red-500" />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
+
+              {currentStep === 2 && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="address"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-700 font-medium">Adresse</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            className="border-gray-300 focus:border-[#700100] focus:ring-[#700100] bg-white"
+                            placeholder="Entrez votre adresse"
+                          />
+                        </FormControl>
+                        <FormMessage className="text-red-500" />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="country"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-700 font-medium">Pays</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            className="border-gray-300 focus:border-[#700100] focus:ring-[#700100] bg-white"
+                            placeholder="Entrez votre pays"
+                          />
+                        </FormControl>
+                        <FormMessage className="text-red-500" />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="zipCode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-gray-700 font-medium">Code Postal</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            className="border-gray-300 focus:border-[#700100] focus:ring-[#700100] bg-white"
+                            placeholder="Entrez votre code postal"
+                          />
+                        </FormControl>
+                        <FormMessage className="text-red-500" />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
             </motion.div>
           </AnimatePresence>
 
