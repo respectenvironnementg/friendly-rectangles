@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useCallback, useTransition } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { saveCartItems, getCartItems } from '@/utils/cartStorage';
 
-interface CartItem {
+export interface CartItem {
   id: number;
   name: string;
   price: number;
@@ -10,62 +11,64 @@ interface CartItem {
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (item: CartItem) => void; // Updated to accept full CartItem
+  addToCart: (item: CartItem) => void;
   removeFromCart: (id: number) => void;
   updateQuantity: (id: number, quantity: number) => void;
-  cartCount: number;
+  clearCart: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [isPending, startTransition] = useTransition();
 
-  const addToCart = useCallback((item: CartItem) => {
-    startTransition(() => {
-      setCartItems(prev => {
-        const existingItem = prev.find(i => i.id === item.id);
-        if (existingItem) {
-          return prev.map(i => 
-            i.id === item.id 
-              ? { ...i, quantity: i.quantity + item.quantity } // Increment the quantity
-              : i
-          );
-        }
-        return [...prev, item]; // Add the item with its quantity
-      });
-    });
+  // Load cart items from localStorage on mount
+  useEffect(() => {
+    const savedItems = getCartItems();
+    if (savedItems.length > 0) {
+      setCartItems(savedItems);
+    }
   }, []);
 
-  const removeFromCart = useCallback((id: number) => {
-    startTransition(() => {
-      setCartItems(prev => prev.filter(item => item.id !== id));
-    });
-  }, []);
+  // Save cart items to localStorage whenever they change
+  useEffect(() => {
+    saveCartItems(cartItems);
+  }, [cartItems]);
 
-  const updateQuantity = useCallback((id: number, quantity: number) => {
-    startTransition(() => {
-      setCartItems(prev =>
-        prev.map(item =>
-          item.id === id ? { ...item, quantity } : item
-        )
-      );
+  const addToCart = (item: CartItem) => {
+    setCartItems(prevItems => {
+      const existingItem = prevItems.find(i => i.id === item.id);
+      if (existingItem) {
+        return prevItems.map(i =>
+          i.id === item.id
+            ? { ...i, quantity: i.quantity + 1 }
+            : i
+        );
+      }
+      return [...prevItems, item];
     });
-  }, []);
+  };
 
-  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const removeFromCart = (id: number) => {
+    setCartItems(prevItems => prevItems.filter(item => item.id !== id));
+  };
+
+  const updateQuantity = (id: number, quantity: number) => {
+    setCartItems(prevItems =>
+      prevItems.map(item =>
+        item.id === id
+          ? { ...item, quantity }
+          : item
+      )
+    );
+  };
+
+  const clearCart = () => {
+    setCartItems([]);
+  };
 
   return (
-    <CartContext.Provider
-      value={{
-        cartItems,
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        cartCount,
-      }}
-    >
+    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, updateQuantity, clearCart }}>
       {children}
     </CartContext.Provider>
   );
