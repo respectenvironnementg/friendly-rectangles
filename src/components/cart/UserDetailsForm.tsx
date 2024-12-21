@@ -138,7 +138,7 @@ const UserDetailsForm = ({ onComplete, initialData }: UserDetailsFormProps) => {
                       <FormControl>
                         <Input
                           {...field}
-                          className="border-gray-300 focus:border-[#700100] focus:ring-[#700100]"
+                          className="border-gray-300 focus:border-[#700100] focus:ring-[#700100] bg-white"
                         />
                       </FormControl>
                       <FormMessage className="text-red-500" />

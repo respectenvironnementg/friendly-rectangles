@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { UserDetails } from '@/utils/userDetailsStorage';
 import PaymentButtons from './PaymentButtons';
+import { Pencil, Trash2 } from 'lucide-react';
 
 interface OrderSummaryProps {
   total: number;
@@ -10,6 +11,8 @@ interface OrderSummaryProps {
   userDetails: UserDetails | null;
   onKonnektClick: () => void;
   onCashClick: () => void;
+  onEditDetails?: () => void;
+  onDeleteDetails?: () => void;
 }
 
 const OrderSummary = ({ 
@@ -18,7 +21,9 @@ const OrderSummary = ({
   finalTotal, 
   userDetails,
   onKonnektClick,
-  onCashClick 
+  onCashClick,
+  onEditDetails,
+  onDeleteDetails
 }: OrderSummaryProps) => {
   return (
     <motion.div 
@@ -30,7 +35,27 @@ const OrderSummary = ({
         <h2 className="text-xl font-serif text-[#1A1F2C] mb-6">Résumé de la commande</h2>
         
         {userDetails && (
-          <div className="mb-6 p-4 bg-gray-50 rounded-md">
+          <div className="mb-6 p-4 bg-[#F1F0FB] rounded-md relative group">
+            <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              {onEditDetails && (
+                <button
+                  onClick={onEditDetails}
+                  className="p-1 hover:bg-white rounded-full mr-1 transition-colors"
+                  title="Modifier"
+                >
+                  <Pencil size={16} className="text-[#700100]" />
+                </button>
+              )}
+              {onDeleteDetails && (
+                <button
+                  onClick={onDeleteDetails}
+                  className="p-1 hover:bg-white rounded-full transition-colors"
+                  title="Supprimer"
+                >
+                  <Trash2 size={16} className="text-[#700100]" />
+                </button>
+              )}
+            </div>
             <h3 className="font-medium text-[#1A1F2C] mb-2">Informations de livraison</h3>
             <p className="text-sm text-[#8E9196]">
               {userDetails.firstName} {userDetails.lastName}<br />

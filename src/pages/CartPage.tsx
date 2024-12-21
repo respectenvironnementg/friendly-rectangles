@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useCart } from '../components/cart/CartProvider';
-import { MinusCircle, PlusCircle, Trash2, ArrowLeft, ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import TopNavbar from '../components/TopNavbar';
 import { useToast } from "@/hooks/use-toast";
@@ -9,7 +8,7 @@ import BrandNavbarSection from "@/components/productsPages/BrandNavbarSection";
 import { motion } from "framer-motion";
 import UserDetailsForm from '@/components/cart/UserDetailsForm';
 import OrderSummary from '@/components/cart/OrderSummary';
-import { UserDetails, getUserDetails } from '@/utils/userDetailsStorage';
+import { UserDetails, getUserDetails, saveUserDetails } from '@/utils/userDetailsStorage';
 import CartItemCard from '@/components/cart/CartItemCard';
 import BackButton from '@/components/cart/BackButton';
 import EmptyCartMessage from '@/components/cart/EmptyCartMessage';
@@ -18,7 +17,8 @@ const CartPage = () => {
   const { cartItems, removeFromCart, updateQuantity } = useCart();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [userDetails, setUserDetails] = React.useState<UserDetails | null>(getUserDetails());
+  const [userDetails, setUserDetails] = useState<UserDetails | null>(getUserDetails());
+  const [isEditing, setIsEditing] = useState(false);
 
   const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shipping = total > 500 ? 0 : 7;
@@ -63,6 +63,30 @@ const CartPage = () => {
     console.log('Processing cash payment');
   };
 
+  const handleEditDetails = () => {
+    setIsEditing(true);
+  };
+
+  const handleDeleteDetails = () => {
+    localStorage.removeItem('userDetails');
+    setUserDetails(null);
+    toast({
+      title: "Informations supprimées",
+      description: "Vos informations ont été supprimées avec succès",
+      className: "bg-red-50 border-red-200",
+      style: {
+        backgroundColor: '#700100',
+        color: 'white',
+        border: '1px solid #590000',
+      },
+    });
+  };
+
+  const handleFormComplete = (details: UserDetails) => {
+    setUserDetails(details);
+    setIsEditing(false);
+  };
+
   return (
     <div className="min-h-screen bg-[#F1F0FB]">
       <TopNavbar />
@@ -96,10 +120,12 @@ const CartPage = () => {
                   ))}
                 </div>
                 
-                <UserDetailsForm 
-                  onComplete={setUserDetails}
-                  initialData={userDetails}
-                />
+                {(!userDetails || isEditing) && (
+                  <UserDetailsForm 
+                    onComplete={handleFormComplete}
+                    initialData={userDetails}
+                  />
+                )}
               </div>
               
               <OrderSummary
@@ -109,6 +135,8 @@ const CartPage = () => {
                 userDetails={userDetails}
                 onKonnektClick={handleKonnektPayment}
                 onCashClick={handleCashPayment}
+                onEditDetails={!isEditing ? handleEditDetails : undefined}
+                onDeleteDetails={!isEditing ? handleDeleteDetails : undefined}
               />
             </div>
           )}
