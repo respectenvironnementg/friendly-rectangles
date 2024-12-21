@@ -8,7 +8,7 @@ import BrandNavbarSection from "@/components/productsPages/BrandNavbarSection";
 import { motion } from "framer-motion";
 import UserDetailsForm from '@/components/cart/UserDetailsForm';
 import OrderSummary from '@/components/cart/OrderSummary';
-import { UserDetails, getUserDetails, saveUserDetails } from '@/utils/userDetailsStorage';
+import { UserDetails, getUserDetails } from '@/utils/userDetailsStorage';
 import CartItemCard from '@/components/cart/CartItemCard';
 import BackButton from '@/components/cart/BackButton';
 import EmptyCartMessage from '@/components/cart/EmptyCartMessage';
@@ -92,14 +92,12 @@ const CartPage = () => {
       <TopNavbar />
       <div className="flex-grow">
         <BrandNavbarSection />
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-4 space-y-4 mt-32">
           <BackButton onClick={() => navigate('/')} />
-        </div>
-        <div className="container mx-auto px-4 py-12 mt-32">
           <motion.h1 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-3xl font-serif text-[#1A1F2C] mb-8"
+            className="text-3xl font-serif text-[#1A1F2C]"
           >
             Mon Panier ({cartItems.length} articles)
           </motion.h1>

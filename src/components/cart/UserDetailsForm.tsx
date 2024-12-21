@@ -51,22 +51,32 @@ const UserDetailsForm = ({ onComplete, initialData }: UserDetailsFormProps) => {
     },
   });
 
-  const onSubmit = (values: UserFormData) => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      saveUserDetails(values as UserDetails);
-      onComplete(values as UserDetails);
-      toast({
-        title: "Détails sauvegardés",
-        description: "Vos informations ont été enregistrées avec succès",
-        className: "bg-red-50 border-red-200",
-        style: {
-          backgroundColor: '#700100',
-          color: 'white',
-          border: '1px solid #590000',
-        },
-      });
+  const onSubmit = async (values: UserFormData) => {
+    const currentStepFields = {
+      0: ['firstName', 'lastName'],
+      1: ['phone', 'email'],
+      2: ['address', 'country', 'zipCode'],
+    }[currentStep];
+
+    const stepIsValid = await form.trigger(currentStepFields as any);
+
+    if (stepIsValid) {
+      if (currentStep < steps.length - 1) {
+        setCurrentStep(currentStep + 1);
+      } else {
+        saveUserDetails(values as UserDetails);
+        onComplete(values as UserDetails);
+        toast({
+          title: "Détails sauvegardés",
+          description: "Vos informations ont été enregistrées avec succès",
+          className: "bg-red-50 border-red-200",
+          style: {
+            backgroundColor: '#700100',
+            color: 'white',
+            border: '1px solid #590000',
+          },
+        });
+      }
     }
   };
 
