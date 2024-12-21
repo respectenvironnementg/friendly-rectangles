@@ -1,26 +1,25 @@
-import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React from 'react';
+import { motion } from 'framer-motion';
 
 const Hero = () => {
   return (
-    <div className="hero-gradient min-h-[80vh] flex items-center justify-center text-white px-4">
-      <div className="max-w-4xl mx-auto text-center animate-fade-in">
-        <h1 className="text-4xl md:text-6xl font-bold mb-6">
-          Welcome to Your New Project
-        </h1>
-        <p className="text-lg md:text-xl mb-8 text-gray-200">
-          Start building something amazing with React and Tailwind CSS
-        </p>
-        <Button 
-          variant="secondary" 
-          size="lg"
-          className="group"
-        >
-          Get Started
-          <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-        </Button>
-      </div>
-    </div>
+    <section className="relative h-screen">
+      <motion.div 
+        className="absolute inset-0 bg-cover bg-center"
+        style={{
+          backgroundImage: "url('banner.png')",
+          willChange: 'transform' // Optimize GPU acceleration
+        }}
+        initial={{ scale: 1.1, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{
+          duration: 1.2,
+          ease: [0.43, 0.13, 0.23, 0.96],
+          delay: 0.2
+        }}
+      />
+      <div className="absolute inset-0 bg-black/50" />
+    </section>
   );
 };
 
